@@ -11,6 +11,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.datastructures import UploadFile
 from docxtpl import DocxTemplate
+from security import safe_command
 
 trans_file = Path(__file__).parent / "translations.json"
 with trans_file.open("r", encoding="utf-8") as f:
@@ -105,8 +106,7 @@ def convert_to_pdf(docx_path: Path) -> Path:
     )
     if soffice is None:
         raise HTTPException(500, "LibreOffice not found")
-    result = subprocess.run(
-        [soffice, "--headless", "--convert-to", "pdf",
+    result = safe_command.run(subprocess.run, [soffice, "--headless", "--convert-to", "pdf",
          "--outdir", str(docx_path.parent), str(docx_path)],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
